@@ -65,4 +65,4 @@ ts=2019-06-12T20:01:45.862347Z caller=level.go:150 method=Multiply level=info Mu
 
 #### Example
 
-You can view a working example [here](https://github.com/jwenz723/gokit-logwrapper).
+You can view a working example [here](https://github.com/jwenz723/gokit-example).
