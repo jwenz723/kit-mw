@@ -47,10 +47,11 @@ interface:
 ```go
 // Create a logger that will be used for normal logging and another for error logging
 errLogger := level.Error(logger)
-infoLogger = level.Info(logger)
+logger = level.Info(logger)
 
 // Wrap an endpoint with the eplogger middleware
-epWithMw := eplogger.LoggingMiddleware(infoLogger, errLogger)(endpoint)
+// errLogger is optional. If errLogger is nil then logger will be used for all events.
+epWithMw := eplogger.LoggingMiddleware(logger, errLogger)(endpoint)
 ```
 
 Now, every time a request passes through an endpoint, keyvals specific to `request` and `response` will be logged

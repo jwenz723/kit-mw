@@ -25,6 +25,52 @@ func (l AppendKeyvalserTest) Keyvals() []interface{} {
 	return []interface{}{stringFieldKey, l.StringField}
 }
 
+func TestLoggingMiddlewareInitializationWithNilLogger(t *testing.T) {
+	mw := LoggingMiddleware(nil, nil)
+	if mw != nil {
+		t.Errorf("LoggingMiddleware returned unexpected non-nil value: want %T, have %T", nil, mw)
+	}
+}
+
+func TestLoggingMiddlewareInitializationWithNilErrLogger(t *testing.T) {
+	// setup the logger
+	var output []interface{}
+	logger := log.Logger(log.LoggerFunc(func(keyvals ...interface{}) error {
+		output = keyvals
+		return nil
+	}))
+	logger = level.Info(logger)
+
+	// Simulate a go-kit endpoint
+	respErr := errors.New("test")
+	ep := func(ctx context.Context, request interface{}) (response interface{}, err error) {
+		return "response", respErr
+	}
+
+	// Wrap the simulated endpoint with the middleware
+	epWithMw := LoggingMiddleware(logger, nil)(ep)
+
+	// Execute the endpoint and middleware
+	epWithMw(context.Background(), "request")
+
+	expectedLen := 6
+	if len(output) != expectedLen {
+		t.Errorf("len of output is different than expected: want %d, have %d", expectedLen, len(output))
+	}
+	if want, have := "level", output[0]; want != have {
+		t.Errorf("output[0]: want %s, have %s", want, have)
+	}
+	if want, have := level.InfoValue(), output[1]; want != have {
+		t.Errorf("output[1]: want %s, have %s", want, have)
+	}
+	if want, have := transErrKey, output[2]; want != have {
+		t.Errorf("output[2]: want %s, have %s", want, have)
+	}
+	if want, have := respErr, output[3]; want != have {
+		t.Errorf("output[3]: want %s, have %s", want, have)
+	}
+}
+
 // TestLoggingMiddleware tests the logging middleware to ensure
 // the underlying endpoing is called and that data is logged as
 // expected.

@@ -37,19 +37,23 @@ const (
 // LoggingMiddleware returns an endpoint middleware that logs the
 // duration of each invocation, the resulting error (if any), and
 // keyvals specific to the request and response object if they implement
-// the AppendKeyvalser interface.
-//
-// The level specified as defaultLevel will be used when the resulting error
-// is nil otherwise level.Error will be used.
+// the AppendKeyvalser interface. If not nil, errLogger will be used for logging
+// requests that resulted in a non-nil error being returned.
 func LoggingMiddleware(logger, errLogger log.Logger) endpoint.Middleware {
+	if logger == nil {
+		return nil
+	}
+	if errLogger == nil {
+		errLogger = logger
+	}
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			defer func(begin time.Time) {
 				kvs := makeKeyvals(request, response, time.Since(begin), err)
 				if err != nil {
-					errLogger.Log(kvs...)
+					err = errLogger.Log(kvs...)
 				} else {
-					logger.Log(kvs...)
+					err = logger.Log(kvs...)
 				}
 			}(time.Now())
 			return next(ctx, request)
