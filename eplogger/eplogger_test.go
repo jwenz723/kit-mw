@@ -51,7 +51,7 @@ func TestLoggingMiddlewareInitializationWithNilErrLogger(t *testing.T) {
 	epWithMw := LoggingMiddleware(logger, nil)(ep)
 
 	// Execute the endpoint and middleware
-	epWithMw(context.Background(), "request")
+	_, _ = epWithMw(context.Background(), "request")
 
 	expectedLen := 6
 	if len(output) != expectedLen {
@@ -181,7 +181,7 @@ func TestLoggingMiddleware(t *testing.T) {
 			epWithMw := LoggingMiddleware(logger, errLogger)(ep)
 
 			// Execute the endpoint and middleware
-			epWithMw(context.Background(), tt.req)
+			_, _ = epWithMw(context.Background(), tt.req)
 
 			if len(output) != tt.expectKVCount {
 				t.Errorf("len of output is different than expected: want %d, have %d", tt.expectKVCount, len(output))
@@ -332,7 +332,7 @@ func BenchmarkLoggingMiddleware(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				// Execute the endpoint and middleware
-				epWithMw(ctx, req)
+				_, _ = epWithMw(ctx, req)
 			}
 		})
 	}
@@ -380,6 +380,6 @@ func BenchmarkMakeKeyvals(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		makeKeyvals(req, resp, d, err)
+		_ = makeKeyvals(req, resp, d, err)
 	}
 }
